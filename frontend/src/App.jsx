@@ -1,4 +1,7 @@
 import { useState } from "react";
+import Navbar from "./components/Navbar";
+import Hero from "./components/Hero";
+import Footer from "./components/Footer";
  
 function App() {
   const[number,setnumber]=useState("");
@@ -15,8 +18,11 @@ function App() {
     const data =await response.json();
     setresult(data.result);
   };
-  return(
+  return(<> <Navbar/>
+  <Hero/>
+  <Footer/>
     <div className="container">
+
       <h1>testing integration</h1>
       <input type="number" value={number}
       onChange={(e)=>setnumber(e.target.value)}
@@ -25,7 +31,7 @@ function App() {
       {result!==null &&(<h2>result form backend
         {result}
       </h2>)}
-    </div>
+    </div></>
   )
   
 }
