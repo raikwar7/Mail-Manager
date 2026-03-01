@@ -44,9 +44,9 @@ async def google_callback(request:Request,db:Session=Depends(get_db)):
     - Store user in DB if not exists
     - Generate JWT token
     """
-    token=await oauth.google.authorize_acess_token(request)
-    user_info=token["userinfo"]
-    email=token["email"]
+    token=await oauth.google.authorize_access_token(request)
+    user_info=token.get("userinfo")
+    email=user_info.get("email")
 
     #chekc if user already exist
 

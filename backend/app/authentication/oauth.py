@@ -3,8 +3,12 @@ oauth.py
 ---------
 Configures Google OAuth using Authlib
 """
- 
+import os
+from dotenv import load_dotenv
+
 from authlib.integrations.starlette_client import OAuth
+load_dotenv()
+
 
 #oauth oibject
 oauth=OAuth()
@@ -12,8 +16,8 @@ oauth=OAuth()
 #register google oauth provider
 oauth.register(
     name="google",
-    client_id="GOOGLE_CLIENT_ID",
-    client_secret="GOOGLE_CLIENT_SECRET",
+    client_id=os.getenv("GOOGLE_CLIENT_ID"),
+    client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
     client_kwargs={
         "scope":"openid email profile"

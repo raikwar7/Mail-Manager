@@ -1,30 +1,59 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from pydantic import BaseModel
-from app.schemas.database import Base,engine
+from dotenv import load_dotenv
+import os
+
+ 
+
+from app.schemas.database import Base, engine
 from app.routes.auth import router
 
+# Load environment variables
+load_dotenv()
+print("the cliend id is",os.getenv("GOOGLE_CLIENT_ID"))
 
+
+# Create DB tables
 Base.metadata.create_all(bind=engine)
-app=FastAPI()
 
+app = FastAPI()
+
+# 🔐 Add Session Middleware (REQUIRED FOR OAUTH)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv("SESSION_SECRET", "dev-secret-key"),  # use .env in prod
+)
+
+# 🌍 CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173"],  # frontend URL (not "*")
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include auth routes
 app.include_router(router)
+
+
+# -------------------------
+# Test Routes (Optional)
+# -------------------------
+
 class NumberInput(BaseModel):
-    number:int
+    number: int
+
 
 @app.get("/")
 def root():
     return {"message": "Backend is running 🚀"}
 
+
 @app.post("/double")
-def double_number(data:NumberInput):
-    return{
-        "result":data.number*2
+def double_number(data: NumberInput):
+    return {
+        "result": data.number * 2
     }
