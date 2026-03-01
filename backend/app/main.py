@@ -4,7 +4,8 @@ from starlette.middleware.sessions import SessionMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
-
+from app.routes import admin
+from app.routes import user
  
 
 from app.schemas.database import Base, engine
@@ -37,6 +38,8 @@ app.add_middleware(
 
 # Include auth routes
 app.include_router(router)
+app.include_router(admin.router)
+app.include_router(user.router)
 
 
 # -------------------------

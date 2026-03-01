@@ -4,6 +4,7 @@ routes/auth.py
 Handles Google OAuth login & callback logic
 """
 from fastapi import APIRouter,Depends,Request
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from app.schemas.database  import sessionLocal
 from app.models.models import User
@@ -12,7 +13,7 @@ from app.authentication.auth import create_jwt
 
 #router with/auth prefic
 
-router=APIRouter(prefix="/auth")
+router=APIRouter(prefix="/auth",tags=["Auth"])
 
 def get_db():
     """
@@ -57,11 +58,11 @@ async def google_callback(request:Request,db:Session=Depends(get_db)):
         db.commit()
 
     jwt_token=create_jwt(email)
+# Frontend URL (Vite runs on 5173)
+    frontend_url = "http://localhost:5173"
 
-    #return token to frontend
-    return{
-        "acess_token":
-        jwt_token,
-        "email":email
-    }
+    # Redirect to frontend with token
+    return RedirectResponse(
+        url=f"{frontend_url}/login-success?token={jwt_token}"
+    )
 
