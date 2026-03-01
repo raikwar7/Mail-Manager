@@ -2,38 +2,55 @@ import { useState } from "react";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import Footer from "./components/Footer";
- 
-function App() {
-  const[number,setnumber]=useState("");
-  const[result,setresult]=useState(null);
-  const sendnumber=async () => {
-    
-    const response=await fetch("http://127.0.0.1:8000/double",{
-      method:"POST",
-      headers:{
-        "content-type":"application/json"
-      },
-      body:JSON.stringify({number:Number(number)})
-    });
-    const data =await response.json();
-    setresult(data.result);
-  };
-  return(<> <Navbar/>
-  <Hero/>
-  <Footer/>
-    <div className="container">
 
-      <h1>testing integration</h1>
-      <input type="number" value={number}
-      onChange={(e)=>setnumber(e.target.value)}
-      placeholder="enet no"/>
-      <button onClick={sendnumber}>send</button>
-      {result!==null &&(<h2>result form backend
-        {result}
-      </h2>)}
-    </div></>
-  )
-  
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+function App() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleGoogleLogin = () => {
+    try {
+      if (!API_BASE_URL) {
+        setError("API base URL not configured.");
+        return;
+      }
+
+      setLoading(true);
+      setError("");
+
+      const redirectUrl = `${API_BASE_URL}/auth/google/login`;
+      window.location.assign(redirectUrl);
+
+    } catch (err) {
+      console.error("OAuth Error:", err);
+      setError("Login failed. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <Navbar />
+      <Hero />
+
+      <div className="container">
+        <h1>Login to Continue</h1>
+
+        <button
+          onClick={handleGoogleLogin}
+          disabled={loading}
+          className="google-button"
+        >
+          {loading ? "Redirecting..." : "Sign in with Google"}
+        </button>
+
+        {error && <p className="error">{error}</p>}
+      </div>
+
+      <Footer />
+    </>
+  );
 }
 
-export default App
+export default App;
