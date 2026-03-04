@@ -7,6 +7,7 @@ import AdminDashboard from "./components/Admin/adminDashboard";
 import Login from "./components/Login/Login";
 import LoginSucess from "./components/Login/LoginSucess";
 import Dashboard from "./components/User/Dashboard";
+import MailBox from "./components/Mails/mailBox";
 function App() {
   return (
     <>
@@ -18,6 +19,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/login-success" element={<LoginSucess />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/mail" element={<MailBox/>}/>
+        
 
 
       </Routes>

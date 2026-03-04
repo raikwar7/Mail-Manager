@@ -25,6 +25,9 @@ function Navbar() {
         <li>
           <Link to="/dashboard" className="hover:text-blue-400">Dashboard</Link>
         </li>
+         <li>
+          <Link to="/mail" className="hover:text-blue-400">Dashboard</Link>
+        </li>
 
         {!token ? (
           <li>
