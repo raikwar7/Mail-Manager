@@ -18,7 +18,6 @@ function MailBox() {
       });
 
       setUserEmail(res.data.email);
-
     } catch (err) {
       console.error("Error fetching user:", err);
     }
@@ -37,7 +36,13 @@ function MailBox() {
         }
       );
 
-      setEmails(res.data);
+      console.log("Emails API Response:", res.data);
+
+      if (Array.isArray(res.data)) {
+        setEmails(res.data);
+      } else {
+        setEmails([]);
+      }
 
     } catch (err) {
       console.error("Error fetching emails:", err);
@@ -63,6 +68,7 @@ function MailBox() {
   return (
     <div className="flex h-[calc(100vh-64px)] bg-gray-100">
 
+      {/* Email List */}
       <div className="w-1/3 bg-white border-r shadow-sm flex flex-col">
 
         <div className="p-4 border-b">
@@ -75,6 +81,10 @@ function MailBox() {
         </div>
 
         <div className="overflow-y-auto flex-1">
+          {emails.length === 0 && !loading && (
+            <div className="p-4 text-gray-500">No Emails Found</div>
+          )}
+
           {emails.map((email) => (
             <div
               key={email.message_id}
@@ -97,12 +107,13 @@ function MailBox() {
         </div>
       </div>
 
+      {/* Email Viewer */}
       <div className="w-2/3 p-8 overflow-y-auto">
         {selectedEmail ? (
           <div className="bg-white shadow-md rounded-xl p-6">
 
             <h2 className="text-2xl font-bold mb-4">
-              {selectedEmail.subject}
+              {selectedEmail.subject || "(No Subject)"}
             </h2>
 
             <p className="text-sm text-gray-600 mb-4">
@@ -110,9 +121,12 @@ function MailBox() {
             </p>
 
             <hr className="my-4" />
+            <div className="whitespace-pre-wrap">
+              {selectedEmail.snippet || "No snippet Body"}
+            </div>
 
             <div className="whitespace-pre-wrap">
-              {selectedEmail.body}
+              {selectedEmail.body_text || "No Email Body"}
             </div>
 
           </div>
