@@ -24,6 +24,7 @@ def get_gmail_service(access_token: str,refresh_token:str):
     print(access_token)
 
     return service
+from app.models.gmailData import Email
 
 @router.get("/fetch-mails")
 def fetch_all_emails(db: Session = Depends(get_db), email: str = ""):
@@ -45,9 +46,8 @@ def fetch_all_emails(db: Session = Depends(get_db), email: str = ""):
 
     messages = results.get("messages", [])
 
-    email_list = []
-
     for msg in messages:
+
         msg_data = service.users().messages().get(
             userId="me",
             id=msg["id"],
@@ -73,14 +73,37 @@ def fetch_all_emails(db: Session = Depends(get_db), email: str = ""):
                     data = part["body"]["data"]
                     body = base64.urlsafe_b64decode(data).decode("utf-8")
 
-        email_list.append({
-            "message_id": msg_data["id"],
-            "thread_id": msg_data["threadId"],
-            "subject": subject,
-            "sender": sender,
-            "snippet": msg_data.get("snippet"),
-            "body": body,
-            "internal_date": msg_data.get("internalDate"),
-        })
+        # Check if email already exists
+        existing = db.query(Email).filter(
+            Email.message_id == msg_data["id"]
+        ).first()
 
-    return email_list
+        if not existing:
+
+            new_email = Email(
+                message_id=msg_data["id"],
+                thread_id=msg_data["threadId"],
+                sender=sender,
+                subject=subject,
+                snippet=msg_data.get("snippet"),
+                body_text=body,
+                internal_date=msg_data.get("internalDate"),
+            )
+
+            db.add(new_email)
+
+    db.commit()
+    emails = db.query(Email).order_by(Email.internal_date.desc()).all()
+
+    return [
+    {
+        "message_id": e.message_id,
+        "thread_id": e.thread_id,
+        "subject": e.subject,
+        "sender": e.sender,
+        "snippet": e.snippet,
+        "body_text": e.body_text,
+        "internal_date": e.internal_date
+    }
+    for e in emails
+]
