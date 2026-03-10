@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import os
 from app.routes import admin
 from app.routes import user
- 
+from app.routes import gmail_data
 
 from app.schemas.database import Base, engine
 from app.routes.auth import router
@@ -40,6 +40,7 @@ app.add_middleware(
 app.include_router(router)
 app.include_router(admin.router)
 app.include_router(user.router)
+app.include_router(gmail_data.router)
 
 
 # -------------------------

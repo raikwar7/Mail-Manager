@@ -33,7 +33,8 @@ async def google_login(request:Request):
     Redirect user to Google login page
     """
     redirect_ui="http://localhost:8000/auth/google/callback"
-    return await oauth.google.authorize_redirect(request,redirect_ui)
+    return await oauth.google.authorize_redirect(request,redirect_ui,access_type="offline",
+        prompt="consent")
 
 @router.get("/google/callback")
 async def google_callback(request:Request,db:Session=Depends(get_db)):
@@ -46,14 +47,17 @@ async def google_callback(request:Request,db:Session=Depends(get_db)):
     - Generate JWT token
     """
     token=await oauth.google.authorize_access_token(request)
+    access_token=token.get("access_token")
+    refresh_token=token.get("refresh_token")
+
     user_info=token.get("userinfo")
     email=user_info.get("email")
 
     #chekc if user already exist
 
     user=db.query(User).filter(User.email==email).first()
-    if not  user:
-        user=User(email=email,provider="google")
+    if not user:
+        user=User(email=email,provider="google",access_token=access_token,refresh_token=refresh_token)
         db.add(user)
         db.commit()
 
