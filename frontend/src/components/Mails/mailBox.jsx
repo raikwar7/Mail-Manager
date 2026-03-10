@@ -5,61 +5,91 @@ function MailBox() {
   const [emails, setEmails] = useState([]);
   const [selectedEmail, setSelectedEmail] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
+
+  const token = localStorage.getItem("token");
+
+  const fetchUser = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/users/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setUserEmail(res.data.email);
+
+    } catch (err) {
+      console.error("Error fetching user:", err);
+    }
+  };
 
   const fetchEmails = async () => {
-    setLoading(true);
-    await axios.post("http://localhost:8000/fetch-mails");
-    await loadEmails();
-    setLoading(false);
+    try {
+      setLoading(true);
+
+      const res = await axios.get(
+        `http://localhost:8000/fetch-mails?email=${userEmail}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setEmails(res.data);
+
+    } catch (err) {
+      console.error("Error fetching emails:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const loadEmails = async () => {
-    const res = await axios.get("http://localhost:8000/emails");
-    setEmails(res.data);
-  };
-
-  const openEmail = async (id) => {
-    const res = await axios.get(`http://localhost:8000/emails/${id}`);
-    setSelectedEmail(res.data);
+  const openEmail = (email) => {
+    setSelectedEmail(email);
   };
 
   useEffect(() => {
-    loadEmails();
+    fetchUser();
   }, []);
+
+  useEffect(() => {
+    if (userEmail) {
+      fetchEmails();
+    }
+  }, [userEmail]);
 
   return (
     <div className="flex h-[calc(100vh-64px)] bg-gray-100">
-      
-      {/* LEFT SIDEBAR */}
+
       <div className="w-1/3 bg-white border-r shadow-sm flex flex-col">
-        
-        {/* Fetch Button */}
+
         <div className="p-4 border-b">
           <button
             onClick={fetchEmails}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition duration-200"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg"
           >
             {loading ? "Fetching..." : "Fetch New Mails"}
           </button>
         </div>
 
-        {/* Email List */}
         <div className="overflow-y-auto flex-1">
           {emails.map((email) => (
             <div
-              key={email.id}
-              onClick={() => openEmail(email.id)}
-              className={`cursor-pointer p-4 border-b hover:bg-gray-100 transition ${
-                selectedEmail?.id === email.id ? "bg-blue-50" : ""
-              }`}
+              key={email.message_id}
+              onClick={() => openEmail(email)}
+              className="cursor-pointer p-4 border-b hover:bg-gray-100"
             >
-              <div className="font-semibold text-gray-800 truncate">
+              <div className="font-semibold">
                 {email.subject || "(No Subject)"}
               </div>
-              <div className="text-sm text-gray-600 truncate">
+
+              <div className="text-sm text-gray-600">
                 {email.sender}
               </div>
-              <div className="text-xs text-gray-500 truncate">
+
+              <div className="text-xs text-gray-500">
                 {email.snippet}
               </div>
             </div>
@@ -67,40 +97,32 @@ function MailBox() {
         </div>
       </div>
 
-      {/* RIGHT MAIL VIEW */}
       <div className="w-2/3 p-8 overflow-y-auto">
         {selectedEmail ? (
           <div className="bg-white shadow-md rounded-xl p-6">
-            
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+
+            <h2 className="text-2xl font-bold mb-4">
               {selectedEmail.subject}
             </h2>
 
-            <div className="text-sm text-gray-600 space-y-1 mb-4">
-              <p><span className="font-semibold">From:</span> {selectedEmail.sender}</p>
-              <p><span className="font-semibold">To:</span> {selectedEmail.to_recipients}</p>
-              {selectedEmail.cc_recipients && (
-                <p><span className="font-semibold">CC:</span> {selectedEmail.cc_recipients}</p>
-              )}
-            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              From: {selectedEmail.sender}
+            </p>
 
             <hr className="my-4" />
 
-            <div
-              className="prose max-w-none text-gray-800"
-              dangerouslySetInnerHTML={{
-                __html:
-                  selectedEmail.body_html ||
-                  `<pre>${selectedEmail.body_text}</pre>`,
-              }}
-            />
+            <div className="whitespace-pre-wrap">
+              {selectedEmail.body}
+            </div>
+
           </div>
         ) : (
           <div className="flex items-center justify-center h-full text-gray-400 text-xl">
-            Select an Email to View
+            Select an Email
           </div>
         )}
       </div>
+
     </div>
   );
 }
