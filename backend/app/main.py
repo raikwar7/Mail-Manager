@@ -7,7 +7,7 @@ import os
 from app.routes import admin
 from app.routes import user
 from app.routes import gmail_data
-
+from app.routes import MailView
 from app.schemas.database import Base, engine
 from app.routes.auth import router
 
@@ -41,6 +41,7 @@ app.include_router(router)
 app.include_router(admin.router)
 app.include_router(user.router)
 app.include_router(gmail_data.router)
+app.include_router(MailView.router)
 
 
 # -------------------------
