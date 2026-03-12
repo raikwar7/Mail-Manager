@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import SentMail from "./SentMail";
-import ReceivedMail from "./ReceivedMail";
-
+import SentMail from "./MailView/SentMailView";
+import ReceivedMail from "./MailView/RecievedMailView";
 const MailDashboard = () => {
 
     const [tab, setTab] = useState("received");
