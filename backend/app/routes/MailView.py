@@ -10,11 +10,8 @@ router = APIRouter()
 
 @router.get('/mails/sent/')
 def get_sent_mails(email:str,db:Session=Depends(get_db)):
-    email=(
-        db.query(Email).filter(Email.sender==email)
-        .order_by(Email.internal_date.desc()).all()
-    )
-    return email
+    return (db.query(Email).filter(Email.sender.like(f"%{email}%"))
+            .order_by(Email.internal_date.desc()).all())
 @router.get('/mails/recieved/')
 def get_recieved_mails(email:str,db:Session=Depends(get_db)):
     return(db.query(Email)
