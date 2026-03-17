@@ -8,11 +8,11 @@ from app.models.gmailData import Email
 
 router = APIRouter()
 
-@router.get('/mails/sent/')
+@router.get('/mails/sent/{email}')
 def get_sent_mails(email:str,db:Session=Depends(get_db)):
     return (db.query(Email).filter(Email.sender.like(f"%{email}%"))
             .order_by(Email.internal_date.desc()).all())
-@router.get('/mails/recieved/')
+@router.get('/mails/recieved/{email}')
 def get_recieved_mails(email:str,db:Session=Depends(get_db)):
     return(db.query(Email)
            .filter(or_
