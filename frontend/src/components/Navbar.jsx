@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 function Navbar() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -28,6 +29,9 @@ function Navbar() {
          <li>
           <Link to="/mail" className="hover:text-blue-400">Dashboard</Link>
         </li>
+         <Link to="/mail/sent" className="hover:text-blue-400">
+  test
+</Link>
 
         {!token ? (
           <li>

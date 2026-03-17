@@ -17,6 +17,7 @@ function LoginSucess() {
     if (token) {
       localStorage.setItem("token", token);
       console.log("TOKEN SAVED");
+        
 
       navigate("/dashboard");
     } else {

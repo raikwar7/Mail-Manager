@@ -8,6 +8,7 @@ import Login from "./components/Login/Login";
 import LoginSucess from "./components/Login/LoginSucess";
 import Dashboard from "./components/User/Dashboard";
 import MailBox from "./components/Mails/mailBox";
+import SentMail from "./components/Mails/MailView/SentMailView";
 function App() {
   return (
     <>
@@ -20,7 +21,7 @@ function App() {
         <Route path="/login-success" element={<LoginSucess />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/mail" element={<MailBox/>}/>
-        
+       <Route path="/mail/sent" element={<SentMail />} />
 
 
       </Routes>
