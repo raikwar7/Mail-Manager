@@ -9,7 +9,8 @@ import LoginSucess from "./components/Login/LoginSucess";
 import Dashboard from "./components/User/Dashboard";
 import MailBox from "./components/Mails/mailBox";
 import SentMail from "./components/Mails/MailView/SentMailView";
-function App() {
+import ReceivedMail from "./components/Mails/MailView/ReceivedMailView";
+ function App() {
   return (
     <>
       <Navbar />
@@ -22,6 +23,8 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/mail" element={<MailBox/>}/>
        <Route path="/mail/sent" element={<SentMail />} />
+       <Route path="/mail/received" element={<ReceivedMail />} />
+
 
 
       </Routes>

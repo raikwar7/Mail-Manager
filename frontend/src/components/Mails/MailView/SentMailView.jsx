@@ -21,7 +21,7 @@ const SentMail = () => {
       const email = userRes.data.email;
 
       const mailRes = await axios.get(
-        `http://127.0.0.1:8000/mails/sent/${email}`
+        `http://127.0.0.1:8000/mails/recieved/${email}`
       );
 
       setMails(mailRes.data);

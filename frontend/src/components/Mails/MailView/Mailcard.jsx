@@ -35,7 +35,7 @@ const MailCard=({mail,type})=>{
           </p>
         ) : (
           <p style={{ margin: 0 }}>
-            <b>To:</b> {mail.receiver}
+            <b>To:</b> {mail.to_recipients}
           </p>
         )}
       </div>
