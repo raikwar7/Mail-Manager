@@ -59,7 +59,18 @@ async def google_callback(request:Request,db:Session=Depends(get_db)):
     if not user:
         user=User(email=email,provider="google",access_token=access_token,refresh_token=refresh_token)
         db.add(user)
+        print("REFRESH TOKEN:", refresh_token)
         db.commit()
+    else:
+        # 🔥 VERY IMPORTANT: update tokens
+        user.access_token = access_token
+
+        # Only update refresh_token if Google sends it
+        if refresh_token:
+            user.refresh_token = refresh_token
+            print("REFRESH TOKEN:", refresh_token)
+        db.commit() 
+
 
     jwt_token=create_jwt(email)
 # Frontend URL (Vite runs on 5173)

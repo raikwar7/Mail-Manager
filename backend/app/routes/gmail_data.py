@@ -10,6 +10,7 @@ router = APIRouter()
 
 
 def get_gmail_service(access_token: str,refresh_token:str):
+    print(access_token,refresh_token)
 
     creds = Credentials(
         token=access_token,
@@ -26,6 +27,13 @@ def get_gmail_service(access_token: str,refresh_token:str):
     return service
 from app.models.gmailData import Email
 
+from app.services.gmail_parser import (
+    parse_headers,
+    extract_body,
+    extract_attachments,
+)
+from google.auth.exceptions import RefreshError
+
 @router.get("/fetch-mails")
 def fetch_all_emails(db: Session = Depends(get_db), email: str = ""):
 
@@ -34,15 +42,30 @@ def fetch_all_emails(db: Session = Depends(get_db), email: str = ""):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    access_token = user.access_token
-    refresh_token = user.refresh_token
+    service = get_gmail_service(user.access_token, user.refresh_token)
+    print("Checkpoint 1: service created")
 
-    service = get_gmail_service(access_token, refresh_token)
+    try:
+        results = service.users().messages().list(
+            userId="me",
+            maxResults=50
+        ).execute()
 
-    results = service.users().messages().list(
-        userId="me",
-        maxResults=20
-    ).execute()
+        print("Checkpoint 2: messages list fetched")
+
+    except RefreshError as e:
+        print("TOKEN ERROR:", str(e))
+        raise HTTPException(
+            status_code=401,
+            detail="Session expired. Please login again."
+        )
+
+    except Exception as e:
+        print("GENERAL ERROR:", str(e))
+        raise HTTPException(
+            status_code=500,
+            detail="Internal error"
+        )
 
     messages = results.get("messages", [])
 
@@ -54,56 +77,45 @@ def fetch_all_emails(db: Session = Depends(get_db), email: str = ""):
             format="full"
         ).execute()
 
-        headers = msg_data["payload"]["headers"]
-
-        subject = ""
-        sender = ""
-
-        for header in headers:
-            if header["name"] == "Subject":
-                subject = header["value"]
-            if header["name"] == "From":
-                sender = header["value"]
-
-        body = ""
-
-        if "parts" in msg_data["payload"]:
-            for part in msg_data["payload"]["parts"]:
-                if part["mimeType"] == "text/plain":
-                    data = part["body"]["data"]
-                    body = base64.urlsafe_b64decode(data).decode("utf-8")
-
-        # Check if email already exists
-        existing = db.query(Email).filter(
+        exists = db.query(Email).filter(
             Email.message_id == msg_data["id"]
         ).first()
 
-        if not existing:
+        if exists:
+            continue
 
-            new_email = Email(
-                message_id=msg_data["id"],
-                thread_id=msg_data["threadId"],
-                sender=sender,
-                subject=subject,
-                snippet=msg_data.get("snippet"),
-                body_text=body,
-                internal_date=msg_data.get("internalDate"),
-            )
+        payload = msg_data["payload"]
 
-            db.add(new_email)
+        header_data = parse_headers(payload.get("headers", []))
+        body_text, body_html = extract_body(payload)
+        attachments = extract_attachments(payload)
+
+        new_email = Email(
+            message_id=msg_data["id"],
+            thread_id=msg_data.get("threadId"),
+            history_id=msg_data.get("historyId"),
+            sender=header_data["sender"],
+            to_recipients=header_data["to"],
+            cc_recipients=header_data["cc"],
+            bcc_recipients=header_data["bcc"],
+            reply_to=header_data["reply_to"],
+            subject=header_data["subject"],
+            snippet=msg_data.get("snippet"),
+            body_text=body_text,
+            body_html=body_html,
+            has_attachments=len(attachments) > 0,
+            attachments=attachments,
+            label_ids=msg_data.get("labelIds"),
+            size_estimate=msg_data.get("sizeEstimate"),
+            internal_date=msg_data.get("internalDate"),
+            raw_headers=payload.get("headers"),
+            raw_payload=payload
+        )
+
+        db.add(new_email)
 
     db.commit()
+
     emails = db.query(Email).order_by(Email.internal_date.desc()).all()
 
-    return [
-    {
-        "message_id": e.message_id,
-        "thread_id": e.thread_id,
-        "subject": e.subject,
-        "sender": e.sender,
-        "snippet": e.snippet,
-        "body_text": e.body_text,
-        "internal_date": e.internal_date
-    }
-    for e in emails
-]
+    return emails
