@@ -10,6 +10,7 @@ export const getSentMails = async(email) => {
 };
 
 export const getRecievedMails = async(email) => {
-    const res = await fetch(`${API_BASE}/mails/recieved/${email}`);
+    const encodedemail = encodeURIComponent(email);
+    const res = await fetch(`${API_BASE}/mails/recieved/${encodedemail}`);
     return res.json();
 }

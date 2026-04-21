@@ -30,7 +30,7 @@ function Navbar() {
           <Link to="/mail" className="hover:text-blue-400">Fetch Mail</Link>
         </li>
          <Link to="/mail/sent" className="hover:text-blue-400">
-  Recieved mail
+  sent mail
 </Link>
          <Link to="/mail/received" className="hover:text-blue-400">
   Recieved mail

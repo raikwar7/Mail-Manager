@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import MailBox from "../mailBox";
+import MailCard from "./Mailcard";
+import axios from "axios";
 const ReceivedMail = () => {
 
     const [mails, setMails] = useState([]);
@@ -22,7 +23,7 @@ const ReceivedMail = () => {
       const email = userRes.data.email;
 
       const mailRes = await axios.get(
-        `http://127.0.0.1:8000/mails/received/${email}`
+        `http://127.0.0.1:8000/mails/recieved/${email}`
       );
 
       setMails(mailRes.data);
@@ -34,10 +35,13 @@ const ReceivedMail = () => {
 
     return (
         <div>
-            <h2>Received Mails</h2>
+           <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6 relative">
+    📥 Received Mails
+    <span className="block w-20 h-1 bg-blue-500 mx-auto mt-2 rounded"></span>
+</h2>
 
             {mails.map(mail => (
-                <MailBox key={mail.id} mail={mail} type="received"/>
+                <MailCard key={mail.id} mail={mail} type="received"/>
             ))}
 
         </div>

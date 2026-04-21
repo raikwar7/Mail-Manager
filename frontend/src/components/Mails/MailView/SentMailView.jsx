@@ -21,7 +21,7 @@ const SentMail = () => {
       const email = userRes.data.email;
 
       const mailRes = await axios.get(
-        `http://127.0.0.1:8000/mails/recieved/${email}`
+        `http://127.0.0.1:8000/mails/sent/${email}`
       );
 
       setMails(mailRes.data);
@@ -32,7 +32,11 @@ const SentMail = () => {
 
   return (
     <div>
-      <h2>Sent Mails</h2>
+        <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6 relative">
+    📥 sent Mails
+    <span className="block w-20 h-1 bg-blue-500 mx-auto mt-2 rounded"></span>
+</h2>
+
 
       {mails.map(mail => (
         <MailCard key={mail.id} mail={mail} type="sent" />
