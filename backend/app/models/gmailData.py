@@ -13,7 +13,6 @@ class Email(Base):
     message_id = Column(String(255), unique=True, index=True)
     thread_id = Column(String(255), index=True)
     history_id = Column(String(255))
-
     # Email metadata
     sender = Column(Text)
     to_recipients = Column(JSON)
