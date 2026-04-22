@@ -23,7 +23,7 @@ const MailCard=({mail,type})=>{
         </h3>
 
         <small style={{ color: "#888" }}>
-          {mail.internal_date}
+          {new Date(Number(mail.internal_date)).toLocaleString()}
         </small>
       </div>
 
