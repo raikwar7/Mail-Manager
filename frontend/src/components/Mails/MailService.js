@@ -16,10 +16,17 @@ export const getRecievedMails = async(email) => {
 }
 export const getmailcountSent = async(email, start, end) => {
     const encodedMail = encodeURIComponent(email);
-    const res = await fetch(`${API_BASE}/mailCount/sent/${encodedMail}`, {
+    const res = await fetch(`${API_BASE}/mailDashboard/sent/${encodedMail}`, {
         params: { start: start, to: end }
     });
     const data = await res.json();
     return data;
-
+}
+export const getmailcountRecieved = async(email, start, end) => {
+    const encodedMail = encodeURIComponent(email);
+    const res = await fetch(`${API_BASE}/mailDashboard/recieved/${encodedMail}`, {
+        params: { start: start, to: end }
+    });
+    const data = await res.json();
+    return data;
 }

@@ -28,7 +28,7 @@ const ReceivedMail = () => {
 
       // If filter applied → use filtered API
       if (startDate && endDate) {
-        url = `http://127.0.0.1:8000/mailCount/sent/${email}`;
+        url = `http://127.0.0.1:8000/mailDashboard/recieved/${email}`;
 
         params = {
           start: startDate + ":00", // fix format
@@ -105,7 +105,7 @@ const ReceivedMail = () => {
       {mails
         .sort((a, b) => b.internal_date - a.internal_date)
         .map((mail) => (
-          <MailCard key={mail.id} mail={mail} type="sent" />
+          <MailCard key={mail.id} mail={mail} type="recieved" />
         ))}
     </div>
   );
