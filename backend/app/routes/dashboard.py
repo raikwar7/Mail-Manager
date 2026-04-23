@@ -9,8 +9,8 @@ from datetime import datetime
 router=APIRouter()
  
 
-@router.get('mailCount/sent/{email}')
-def get_sent_mail_count(email:str,
+@router.get('/mailDashboard/sent/{email}')
+def get_sent_mail_filtered(email:str,
                         start:datetime,
                         to:datetime,
                         db:session=Depends(get_db)):
@@ -20,7 +20,29 @@ def get_sent_mail_count(email:str,
     .filter(Email.sender.like(f"%{email}%"))
     .filter(Email.internal_date.between(from_,to)))
     mails=query.all()
-    count=query.count()
+    count=query.count(mails)
+    return{
+        "mails":mails,
+        "count":count
+    }
+
+@router.get('/mailDashboard/recieved/{email}')
+def get_recieved_mails_filtered(email:str,
+                                start:datetime,
+                                to:datetime,
+                                db:session=Depends(get_db)):
+    from_=int(start.timestamp()*1000)
+    to=int(to.timestamp()*1000)
+    print("start date in ms",from_,"end date",to,"email",email)
+    query=(db.query(Email).filter(
+        or_(
+            Email.bcc_recipients.like(f"%{email}%"),
+            Email.cc_recipients.like(f"%{email}%"),
+            Email.to_recipients.like(f"%{email}%")
+        )
+    ).filter(Email.internal_date.between(from_,to)))
+    mails=query.all()
+    count=mails.count(mails)
     return{
         "mails":mails,
         "count":count
