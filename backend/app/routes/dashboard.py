@@ -20,7 +20,7 @@ def get_sent_mail_filtered(email:str,
     .filter(Email.sender.like(f"%{email}%"))
     .filter(Email.internal_date.between(from_,to)))
     mails=query.all()
-    count=query.count(mails)
+    count=query.count()
     return{
         "mails":mails,
         "count":count
