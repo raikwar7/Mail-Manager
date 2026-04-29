@@ -12,6 +12,8 @@ import SentMail from "./components/Mails/MailView/SentMailView";
 import ReceivedMail from "./components/Mails/MailView/ReceivedMailView";
 import ReceivedFilteredMail from "./components/User/recievedMailsFiltered";
 import SentFilteredMail from "./components/User/sentMailsFiltered";
+import MailContent from "./components/User/sendMail";
+import TemplateManager from "./components/User/mailTemplate";
  function App() {
   return (
     <>
@@ -21,9 +23,11 @@ import SentFilteredMail from "./components/User/sentMailsFiltered";
         <Route path="/" element={<Hero />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/mailTemplate" element={<TemplateManager/>}/>
         <Route path="/login-success" element={<LoginSucess />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/mail" element={<MailBox/>}/>
+       <Route path="/sendMail" element={<MailContent/>}/>
        <Route path="/mail/sent" element={<SentMail />} />
        <Route path="/mail/received" element={<ReceivedMail />} />
        <Route path="/mailDashboard/recieved/" element={<ReceivedFilteredMail/>}/>
