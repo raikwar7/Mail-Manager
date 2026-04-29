@@ -24,6 +24,12 @@ function Navbar() {
         </li>
 
         <li>
+          <Link to="/mailDashboard/sent/" className="hover:text-blue-400">sent Dashboard</Link>
+        </li>
+        <li>
+          <Link to="/mailDashboard/recieved/" className="hover:text-blue-400">recieved Dashboard</Link>
+        </li>
+        <li>
           <Link to="/dashboard" className="hover:text-blue-400">Dashboard</Link>
         </li>
          <li>

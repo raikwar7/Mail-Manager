@@ -10,6 +10,8 @@ import Dashboard from "./components/User/Dashboard";
 import MailBox from "./components/Mails/mailBox";
 import SentMail from "./components/Mails/MailView/SentMailView";
 import ReceivedMail from "./components/Mails/MailView/ReceivedMailView";
+import ReceivedFilteredMail from "./components/User/recievedMailsFiltered";
+import SentFilteredMail from "./components/User/sentMailsFiltered";
  function App() {
   return (
     <>
@@ -24,6 +26,8 @@ import ReceivedMail from "./components/Mails/MailView/ReceivedMailView";
         <Route path="/mail" element={<MailBox/>}/>
        <Route path="/mail/sent" element={<SentMail />} />
        <Route path="/mail/received" element={<ReceivedMail />} />
+       <Route path="/mailDashboard/recieved/" element={<ReceivedFilteredMail/>}/>
+       <Route path="/mailDashboard/sent/" element={<SentFilteredMail/>}/>
 
 
 

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import MailCard from "./Mailcard";
+import MailCard from "../Mails/MailView/Mailcard";
 import axios from "axios";
 
-const ReceivedMail = () => {
+const ReceivedFilteredMail = () => {
   const [mails, setMails] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -111,4 +111,4 @@ const ReceivedMail = () => {
   );
 };
 
-export default ReceivedMail;
+export default  ReceivedFilteredMail;
