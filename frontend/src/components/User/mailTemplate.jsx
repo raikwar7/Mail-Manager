@@ -2,85 +2,105 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 const TemplateManager = () => {
+    const API_URL = "http://127.0.0.1:8000/templates";
+
     const [templates, setTemplates] = useState([]);
-    const [selectedTemplate, setSelectedTemplate] = useState(null);
+    const [selectedId, setSelectedId] = useState(null);
 
     const [title, setTitle] = useState("");
     const [subject, setSubject] = useState("");
     const [body, setBody] = useState("");
 
-    const API_URL = "http://localhost:8000"; // change in prod
+    const [loading, setLoading] = useState(false);
 
-    // 📡 Fetch templates from backend
+    // ✅ Fetch all templates
+    const fetchTemplates = async () => {
+        try {
+            const res = await axios.get(`${API_URL}/show_templates`);
+            setTemplates(res.data);
+        } catch (err) {
+            console.error("Error fetching templates:", err);
+        }
+    };
+
     useEffect(() => {
-        const fetchTemplates = async () => {
-            try {
-                const res = await axios.get(`${API_URL}/get/mails/`);
-                setTemplates(res.data);
-            } catch (error) {
-                console.error("Error fetching templates:", error);
-            }
-        };
-
         fetchTemplates();
     }, []);
 
-    // 🔄 Select template
-    const handleSelectTemplate = (template) => {
-        setSelectedTemplate(template.id);
-        setTitle(template.title || template.heading || "");
-        setSubject(template.subject);
-        setBody(template.body);
+    // ✅ Select template
+    const handleSelect = (template) => {
+        setSelectedId(template.id);
+        setTitle(template.title || "");
+        setSubject(template.subject || "");
+        setBody(template.body || "");
     };
 
-    // 💾 Save template (create/update)
-    const handleSave = async () => {
-        if (!title || !subject || !body) {
-            alert("All fields required!");
-            return;
-        }
-
-        try {
-            if (selectedTemplate) {
-                // UPDATE
-                await axios.put(
-                    `${API_URL}/templates/${selectedTemplate}`,
-                    { title, subject, body }
-                );
-            } else {
-                // CREATE
-                await axios.post(`${API_URL}/templates`, {
-                    title,
-                    subject,
-                    body
-                });
-            }
-
-            // 🔁 Refresh list
-            const res = await axios.get(`${API_URL}/get/mails/`);
-            setTemplates(res.data);
-
-            // reset
-            handleNew();
-
-        } catch (error) {
-            console.error("Error saving template:", error);
-        }
-    };
-
-    // 🆕 New template
+    // ✅ Reset form
     const handleNew = () => {
-        setSelectedTemplate(null);
+        setSelectedId(null);
         setTitle("");
         setSubject("");
         setBody("");
     };
 
-    return (
-        <div className="flex h-screen">
+    // ✅ Save (Create / Update)
+    const handleSave = async () => {
+        if (!title || !subject || !body) {
+            alert("All fields are required!");
+            return;
+        }
 
-            {/* 📚 Sidebar */}
-            <div className="w-[30%] bg-gray-100 p-4 border-r overflow-y-auto">
+        setLoading(true);
+
+        try {
+            if (selectedId) {
+                // ✅ UPDATE (FIXED)
+                await axios.put(`${API_URL}/show_templates/${selectedId}`, {
+                    title,
+                    subject,
+                    body,
+                });
+            } else {
+                // ✅ CREATE
+                await axios.post(`${API_URL}/create_new_template`, {
+                    title,
+                    subject,
+                    body,
+                });
+            }
+
+            await fetchTemplates();
+            handleNew();
+
+        } catch (err) {
+            console.error("Error saving template:", err.response?.data || err);
+        }
+
+        setLoading(false);
+    };
+
+    // ✅ Delete
+    const handleDelete = async (id) => {
+        if (!window.confirm("Delete this template?")) return;
+
+        try {
+            await axios.delete(`${API_URL}/${id}`);
+            await fetchTemplates();
+
+            if (selectedId === id) {
+                handleNew();
+            }
+
+        } catch (err) {
+            console.error("Error deleting template:", err);
+        }
+    };
+
+    return (
+        <div className="flex h-screen font-sans">
+
+            {/* Sidebar */}
+            <div className="w-1/3 bg-gray-100 p-4 border-r overflow-y-auto">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold">Templates</h2>
                     <button
@@ -94,27 +114,37 @@ const TemplateManager = () => {
                 {templates.map((t) => (
                     <div
                         key={t.id}
-                        onClick={() => handleSelectTemplate(t)}
                         className={`p-3 mb-2 rounded cursor-pointer ${
-                            selectedTemplate === t.id
-                                ? "bg-blue-200"
-                                : "bg-white"
+                            selectedId === t.id ? "bg-blue-200" : "bg-white"
                         }`}
+                        onClick={() => handleSelect(t)}
                     >
-                        <h3 className="font-medium">
-                            {t.title || t.heading}
-                        </h3>
-                        <p className="text-sm text-gray-600 truncate">
-                            {t.subject}
-                        </p>
+                        <div className="flex justify-between">
+                            <div>
+                                <h3 className="font-medium">{t.title}</h3>
+                                <p className="text-sm text-gray-600 truncate">
+                                    {t.subject}
+                                </p>
+                            </div>
+
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(t.id);
+                                }}
+                                className="text-red-500"
+                            >
+                                ✕
+                            </button>
+                        </div>
                     </div>
                 ))}
             </div>
 
-            {/* ✍️ Editor */}
-            <div className="w-[70%] p-6">
+            {/* Editor */}
+            <div className="w-2/3 p-6">
                 <h2 className="text-2xl font-semibold mb-4">
-                    {selectedTemplate ? "Edit Template" : "Create Template"}
+                    {selectedId ? "Edit Template" : "Create Template"}
                 </h2>
 
                 {/* Title */}
@@ -143,13 +173,14 @@ const TemplateManager = () => {
                     onChange={(e) => setBody(e.target.value)}
                 />
 
-                {/* Actions */}
+                {/* Buttons */}
                 <div className="flex gap-3">
                     <button
                         onClick={handleSave}
+                        disabled={loading}
                         className="bg-green-500 text-white px-4 py-2 rounded"
                     >
-                        Save
+                        {loading ? "Saving..." : "Save"}
                     </button>
 
                     <button
