@@ -6,6 +6,7 @@ const ReceivedFilteredMail = () => {
   const [mails, setMails] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const[set]
 
   const fetchMails = async () => {
     try {
