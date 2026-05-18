@@ -6,63 +6,74 @@ const SentFilteredMail = () => {
   const [mails, setMails] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [receiver, setReceiver] = useState(""); // ✅ correct naming
+  const [receiverList, setReceiverList] = useState([]);
 
+  // ✅ get logged-in user email
+  const getUserEmail = async () => {
+    const token = localStorage.getItem("token");
+
+    const res = await axios.get("http://127.0.0.1:8000/users/me", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return res.data.email;
+  };
+
+  // ✅ fetch sent mails
   const fetchMails = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const email = await getUserEmail();
 
-      // Get logged-in user
-      const userRes = await axios.get(
-        "http://127.0.0.1:8000/users/me",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const url = `http://127.0.0.1:8000/mailDashboard/sent/${email}`;
 
-      const email = userRes.data.email;
-
-      let url = `http://127.0.0.1:8000/mails/sent/${email}`;
       let params = {};
 
-      // If filter applied → use filtered API
-      if (startDate && endDate) {
-        url = `http://127.0.0.1:8000/mailDashboard/sent/${email}`;
+      if (startDate) params.start = new Date(startDate).toISOString();
+      if (endDate) params.to = new Date(endDate).toISOString();
 
-        params = {
-          start: startDate + ":00", // fix format
-          to: endDate + ":00",
-        };
-      }
+      if (receiver) params.receiver = receiver;
 
       const res = await axios.get(url, { params });
 
-      // Handle both API formats
-      if (res.data.mails) {
-        setMails(res.data.mails);
-      } else {
-        setMails(res.data);
-      }
+      setMails(res.data.mails || []);
     } catch (error) {
       console.error("Error fetching mails:", error);
     }
   };
 
+  // ✅ fetch receiver list (dropdown)
+  const fetchReceivers = async () => {
+    try {
+      const email = await getUserEmail();
+
+      const res = await axios.get(
+        `http://127.0.0.1:8000/mailDashboard/senders/${email}`
+      );
+
+      setReceiverList(res.data.receivers || []);
+    } catch (error) {
+      console.error("Error fetching receivers:", error);
+    }
+  };
+
   useEffect(() => {
-    fetchMails();
+    fetchMails();      // load mails initially
+    fetchReceivers();  // load dropdown
   }, []);
 
   return (
     <div>
       {/* 🔹 Title */}
-      <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6 relative">
-        📥 sent Mails
-        <span className="block w-20 h-1 bg-blue-500 mx-auto mt-2 rounded"></span>
+      <h2 className="text-3xl font-semibold text-center mb-6">
+        📤 Sent Mails
       </h2>
 
-      {/* 🔹 Filter UI */}
+      {/* 🔹 Filters */}
       <div className="flex gap-4 justify-center mb-6">
+
         <input
           type="datetime-local"
           value={startDate}
@@ -77,6 +88,20 @@ const SentFilteredMail = () => {
           className="border p-2 rounded"
         />
 
+        {/* ✅ Receiver dropdown */}
+        <select
+          value={receiver}
+          onChange={(e) => setReceiver(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option value="">All Receivers</option>
+          {receiverList.map((r, index) => (
+            <option key={index} value={r}>
+              {r}
+            </option>
+          ))}
+        </select>
+
         <button
           onClick={fetchMails}
           className="bg-blue-500 text-white px-4 py-2 rounded"
@@ -88,6 +113,7 @@ const SentFilteredMail = () => {
           onClick={() => {
             setStartDate("");
             setEndDate("");
+            setReceiver("");
             fetchMails();
           }}
           className="bg-gray-400 text-white px-4 py-2 rounded"
@@ -97,7 +123,7 @@ const SentFilteredMail = () => {
       </div>
 
       {/* 🔹 Count */}
-      <h3 className="text-center mb-4 text-gray-600">
+      <h3 className="text-center mb-4">
         Total Mails: {mails.length}
       </h3>
 
@@ -111,4 +137,4 @@ const SentFilteredMail = () => {
   );
 };
 
-export default  SentFilteredMail;
+export default SentFilteredMail;

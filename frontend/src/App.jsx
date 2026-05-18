@@ -28,8 +28,7 @@ import TemplateManager from "./components/User/mailTemplate";
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/mail" element={<MailBox/>}/>
        <Route path="/sendMail" element={<MailContent/>}/>
-       <Route path="/mail/sent" element={<SentMail />} />
-       <Route path="/mail/received" element={<ReceivedMail />} />
+        
        <Route path="/mailDashboard/recieved/" element={<ReceivedFilteredMail/>}/>
        <Route path="/mailDashboard/sent/" element={<SentFilteredMail/>}/>
 

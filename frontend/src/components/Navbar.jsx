@@ -36,18 +36,12 @@ function Navbar() {
         <li>
           <Link to="/dashboard" className="hover:text-blue-400">Dashboard</Link>
         </li>
-        <li>
-          <Link to="/sendMail" className="hover:text-blue-400">send mail</Link>
-        </li>
+         
          <li>
           <Link to="/mail" className="hover:text-blue-400">Fetch Mail</Link>
         </li>
-         <Link to="/mail/sent" className="hover:text-blue-400">
-  sent mail
-</Link>
-         <Link to="/mail/received" className="hover:text-blue-400">
-  Recieved mail
-</Link>
+        
+         
 
         {!token ? (
           <li>
