@@ -1,21 +1,18 @@
-from fastapi import APIRouter,Depends
-from sqlalchemy import or_
+from fastapi import APIRouter, Depends
+from sqlalchemy import or_, distinct
 from sqlalchemy.orm import Session
 from app.routes.user import get_db
 from app.models.gmailData import Email
 from datetime import datetime
-from sqlalchemy import distinct
+from typing import Optional
+from sqlalchemy import func
 
 
-router=APIRouter()
+router = APIRouter()
 
-'''this one is for the recievedmailsfiltered'''
-
+''' 🔹 Get unique senders for a receiver '''
 @router.get('/mailDashboard/receivers/{email}')
 def get_senders_for_receiver_dashboard(email: str, db: Session = Depends(get_db)):
-    """
-    If user is in TO / CC / BCC → return unique senders
-    """
 
     senders = (
         db.query(distinct(Email.sender))
@@ -30,11 +27,11 @@ def get_senders_for_receiver_dashboard(email: str, db: Session = Depends(get_db)
     )
 
     sender_list = [s[0] for s in senders if s[0]]
- 
+
     return {"senders": sender_list}
 
-'''this one is for the sentmailsfiltered'''
 
+''' 🔹 Get unique receivers for a sender '''
 @router.get('/mailDashboard/senders/{email}')
 def get_receivers_for_sender_dashboard(email: str, db: Session = Depends(get_db)):
 
@@ -48,85 +45,42 @@ def get_receivers_for_sender_dashboard(email: str, db: Session = Depends(get_db)
 
     for mail in mails:
 
-        # 🔹 TO
-        if mail.to_recipients:
-            if isinstance(mail.to_recipients, list):
-                receivers_set.update(mail.to_recipients)
-            else:
-                receivers_set.update(mail.to_recipients.split(","))
-
-        # 🔹 CC
-        if mail.cc_recipients:
-            if isinstance(mail.cc_recipients, list):
-                receivers_set.update(mail.cc_recipients)
-            else:
-                receivers_set.update(mail.cc_recipients.split(","))
-
-        # 🔹 BCC
-        if mail.bcc_recipients:
-            if isinstance(mail.bcc_recipients, list):
-                receivers_set.update(mail.bcc_recipients)
-            else:
-                receivers_set.update(mail.bcc_recipients.split(","))
+        for field in [mail.to_recipients, mail.cc_recipients, mail.bcc_recipients]:
+            if field:
+                if isinstance(field, list):
+                    receivers_set.update(field)
+                else:
+                    receivers_set.update(field.split(","))
 
     receivers_list = [r.strip() for r in receivers_set if r]
 
     return {"receivers": receivers_list}
 
 
+''' 🔹 Get filtered sent mails '''
 @router.get('/mailDashboard/sent/{email}')
 def get_sent_mail_filtered(
     email: str,
-    start: datetime,
-    to: datetime,
-    sender: str = None,
+    start: Optional[datetime] = None,
+    to: Optional[datetime] = None,
+    receiver: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    from_ = int(start.timestamp() * 1000)
-    to_ = int(to.timestamp() * 1000)
 
-    query = (
-        db.query(Email)
-        .filter(Email.sender.like(f"%{email}%"))
-        .filter(Email.internal_date.between(from_, to_))
+    query = db.query(Email).filter(
+        Email.sender.like(f"%{email}%")
     )
 
-    # ✅ Apply sender filter
-    if sender:
-        query = query.filter(Email.sender == sender)
+    # ✅ Flexible date filtering
+    if start:
+        from_ = int(start.timestamp() * 1000)
+        query = query.filter(Email.internal_date >= from_)
 
-    mails = query.all()
-    count = len(mails)
+    if to:
+        to_ = int(to.timestamp() * 1000)
+        query = query.filter(Email.internal_date <= to_)
 
-    return {
-        "mails": mails,
-        "count": count
-    }
-
-@router.get('/mailDashboard/recieved/{email}')
-def get_recieved_mails_filtered(
-    email: str,
-    start: datetime,
-    to: datetime,
-    receiver: str = None,
-    db: Session = Depends(get_db)
-):
-    from_ = int(start.timestamp() * 1000)
-    to_ = int(to.timestamp() * 1000)
-
-    query = (
-        db.query(Email)
-        .filter(
-            or_(
-                Email.bcc_recipients.like(f"%{email}%"),
-                Email.cc_recipients.like(f"%{email}%"),
-                Email.to_recipients.like(f"%{email}%")
-            )
-        )
-        .filter(Email.internal_date.between(from_, to_))
-    )
-
-    # ✅ Apply receiver filter
+    # ✅ Sender filter
     if receiver:
         query = query.filter(
             or_(
@@ -136,10 +90,49 @@ def get_recieved_mails_filtered(
             )
         )
 
-    mails = query.all()
-    count = len(mails)
+    mails = query.order_by(Email.internal_date.desc()).all()
 
     return {
         "mails": mails,
-        "count": count
+        "count": len(mails)
+    }
+
+
+''' 🔹 Get filtered received mails '''
+@router.get('/mailDashboard/received/{email}')
+def get_received_mails_filtered(
+    email: str,
+    start: Optional[datetime] = None,
+    to: Optional[datetime] = None,
+    sender: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    query=db.query(Email)
+    query = query.filter(
+            or_(
+                Email.to_recipients.like(f"%{email}%"),
+                Email.cc_recipients.like(f"%{email}%"),
+                Email.bcc_recipients.like(f"%{email}%")
+            )
+        )
+    if sender:
+     query = query.filter(Email.sender.like(f"%{sender}%")
+    )
+
+    # ✅ Flexible date filtering
+    if start:
+        from_ = int(start.timestamp() * 1000)
+        query = query.filter(Email.internal_date >= from_)
+
+    if to:
+        to_ = int(to.timestamp() * 1000)
+        query = query.filter(Email.internal_date <= to_)
+  
+     
+
+    mails = query.order_by(Email.internal_date.desc()).all()
+
+    return {
+        "mails": mails,
+        "count": len(mails)
     }
