@@ -6,64 +6,72 @@ const ReceivedFilteredMail = () => {
   const [mails, setMails] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const[set]
+  const [sender, setSender] = useState(""); // ✅ renamed
+  const [senderList, setSenderList] = useState([]); // ✅ dropdown
 
+  const getUserEmail = async () => {
+    const token = localStorage.getItem("token");
+
+    const res = await axios.get("http://127.0.0.1:8000/users/me", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return res.data.email;
+  };
+
+  // ✅ Fetch mails
   const fetchMails = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const email = await getUserEmail();
 
-      // Get logged-in user
-      const userRes = await axios.get(
-        "http://127.0.0.1:8000/users/me",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      let url = `http://127.0.0.1:8000/mailDashboard/received/${email}`;
 
-      const email = userRes.data.email;
-
-      let url = `http://127.0.0.1:8000/mails/recieved/${email}`;
       let params = {};
 
-      // If filter applied → use filtered API
-      if (startDate && endDate) {
-        url = `http://127.0.0.1:8000/mailDashboard/recieved/${email}`;
+      if (startDate) params.start = new Date(startDate).toISOString();
+      if (endDate) params.to = new Date(endDate).toISOString();
 
-        params = {
-          start: startDate + ":00", // fix format
-          to: endDate + ":00",
-        };
-      }
+      if (sender) params.sender = sender;
 
       const res = await axios.get(url, { params });
 
-      // Handle both API formats
-      if (res.data.mails) {
-        setMails(res.data.mails);
-      } else {
-        setMails(res.data);
-      }
+      setMails(res.data.mails || []);
     } catch (error) {
       console.error("Error fetching mails:", error);
     }
   };
 
+  // ✅ Fetch sender list (dropdown)
+  const fetchSenders = async () => {
+    try {
+      const email = await getUserEmail();
+
+      const res = await axios.get(
+        `http://127.0.0.1:8000/mailDashboard/receivers/${email}`
+      );
+
+      setSenderList(res.data.senders || []);
+    } catch (err) {
+      console.error("Error fetching senders:", err);
+    }
+  };
+
   useEffect(() => {
-    fetchMails();
+    fetchMails();     // ✅ load all mails initially
+    fetchSenders();   // ✅ load sender dropdown
   }, []);
 
   return (
     <div>
-      {/* 🔹 Title */}
-      <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6 relative">
+      <h2 className="text-3xl font-semibold text-center mb-6">
         📥 Received Mails
-        <span className="block w-20 h-1 bg-blue-500 mx-auto mt-2 rounded"></span>
       </h2>
 
-      {/* 🔹 Filter UI */}
+      {/* Filters */}
       <div className="flex gap-4 justify-center mb-6">
+
         <input
           type="datetime-local"
           value={startDate}
@@ -78,6 +86,20 @@ const ReceivedFilteredMail = () => {
           className="border p-2 rounded"
         />
 
+        {/* ✅ Sender Dropdown */}
+        <select
+          value={sender}
+          onChange={(e) => setSender(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option value="">All Senders</option>
+          {senderList.map((s, index) => (
+            <option key={index} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+
         <button
           onClick={fetchMails}
           className="bg-blue-500 text-white px-4 py-2 rounded"
@@ -89,6 +111,7 @@ const ReceivedFilteredMail = () => {
           onClick={() => {
             setStartDate("");
             setEndDate("");
+            setSender("");
             fetchMails();
           }}
           className="bg-gray-400 text-white px-4 py-2 rounded"
@@ -97,19 +120,17 @@ const ReceivedFilteredMail = () => {
         </button>
       </div>
 
-      {/* 🔹 Count */}
-      <h3 className="text-center mb-4 text-gray-600">
+      <h3 className="text-center mb-4">
         Total Mails: {mails.length}
       </h3>
 
-      {/* 🔹 Mail List */}
       {mails
         .sort((a, b) => b.internal_date - a.internal_date)
         .map((mail) => (
-          <MailCard key={mail.id} mail={mail} type="recieved" />
+          <MailCard key={mail.id} mail={mail} type="received" />
         ))}
     </div>
   );
 };
 
-export default  ReceivedFilteredMail;
+export default ReceivedFilteredMail;
