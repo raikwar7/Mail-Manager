@@ -12,6 +12,8 @@ from app.routes import dashboard
 from app.schemas.database import Base, engine
 from app.routes.auth import router
 from app.routes import templates_routes
+from app.routes import mailCred
+from app.routes import sendAmail
 
 # Load environment variables
 load_dotenv()
@@ -46,6 +48,8 @@ app.include_router(gmail_data.router)
 app.include_router(MailView.router)
 app.include_router(dashboard.router)
 app.include_router(templates_routes.router)
+app.include_router(mailCred.router)
+app.include_router(sendAmail.router)
 
 
 # -------------------------
