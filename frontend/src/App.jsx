@@ -14,7 +14,10 @@ import ReceivedFilteredMail from "./components/User/recievedMailsFiltered";
 import SentFilteredMail from "./components/User/sentMailsFiltered";
 import MailContent from "./components/User/sendMail";
 import TemplateManager from "./components/User/mailTemplate";
- function App() {
+// 1. Import at the top
+import MailComposer from "./components/User/sendAmail";
+
+  function App() {
   return (
     <>
       <Navbar />
@@ -28,7 +31,7 @@ import TemplateManager from "./components/User/mailTemplate";
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/mail" element={<MailBox/>}/>
        <Route path="/sendMail" element={<MailContent/>}/>
-        
+        <Route path="/mailComposer" element={<MailComposer />} />
        <Route path="/mailDashboard/recieved/" element={<ReceivedFilteredMail/>}/>
        <Route path="/mailDashboard/sent/" element={<SentFilteredMail/>}/>
 

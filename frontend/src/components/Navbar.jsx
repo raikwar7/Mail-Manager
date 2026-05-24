@@ -40,7 +40,9 @@ function Navbar() {
          <li>
           <Link to="/mail" className="hover:text-blue-400">Fetch Mail</Link>
         </li>
-        
+        <li>
+          <Link to="/mailComposer" className="hover:text-blue-400">Fetch Mail</Link>
+        </li>
          
 
         {!token ? (
