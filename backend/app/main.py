@@ -14,6 +14,7 @@ from app.routes.auth import router
 from app.routes import templates_routes
 from app.routes import mailCred
 from app.routes import sendAmail
+from app.routes import aiSummarizerGenRouter
 
 # Load environment variables
 load_dotenv()
@@ -50,6 +51,7 @@ app.include_router(dashboard.router)
 app.include_router(templates_routes.router)
 app.include_router(mailCred.router)
 app.include_router(sendAmail.router)
+app.include_router(aiSummarizerGenRouter.router)
 
 
 # -------------------------

@@ -48,7 +48,7 @@ def fetch_all_emails(db: Session = Depends(get_db), email: str = ""):
     try:
         results = service.users().messages().list(
             userId="me",
-            maxResults=50
+            maxResults=10
         ).execute()
 
         print("Checkpoint 2: messages list fetched")
