@@ -19,9 +19,7 @@ function Navbar() {
           <Link to="/" className="hover:text-blue-400">Home</Link>
         </li>
 
-        <li>
-          <Link to="/admin" className="hover:text-blue-400">Admin</Link>
-        </li>
+        
 
         <li>
           <Link to="/mailDashboard/sent/" className="hover:text-blue-400">sent Dashboard</Link>
@@ -41,7 +39,7 @@ function Navbar() {
           <Link to="/mail" className="hover:text-blue-400">Fetch Mail</Link>
         </li>
         <li>
-          <Link to="/mailComposer" className="hover:text-blue-400">Fetch Mail</Link>
+          <Link to="/mailComposer" className="hover:text-blue-400">SendAmail</Link>
         </li>
          
 
